@@ -40,7 +40,6 @@ class CreateProduitCommand extends Command
         $this
             // If you don't like using the $defaultDescription static property,
             // you can also define the short description using this method:
-            // ->setDescription('...')
             ->addArgument('Name', InputArgument::REQUIRED, 'The Name of the produit.')
             ->addArgument('Color', InputArgument::REQUIRED, 'The Color of the produit.')
             ->addArgument('Description', InputArgument::REQUIRED, 'The Description of the produit.')

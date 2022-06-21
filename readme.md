@@ -10,3 +10,9 @@ puis faire:
 
 et ensuite lancer le projet avec la commande: 
 - symfony server:start
+
+Pour crée un nouveau produit veuillez utilisez cette commande : 
+- php bin/console app:create-produit [Name] [Color] [Description] [Prices]
+
+Pour crée un nouvel utilisateur veuillez utilisez cette commande : 
+- php bin/console app:create-user [username] [password] [email]
