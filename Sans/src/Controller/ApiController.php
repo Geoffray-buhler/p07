@@ -182,15 +182,15 @@ class ApiController extends AbstractController
 
     // Route pour supprimer un utilisateur de l'api -- supprimer un utilisateur ajouté par un client.
     #[Route('/api/delete/user/{iduser}', name: 'app_api_user', methods: ['DELETE'])]
-    public function deleteUser(int $iduser,Request $request,EntityManagerInterface $em )
+    public function deleteUser(int $iduser,Request $request,EntityManagerInterface $entityManager )
     {
         $res = $this->isLogged($request);
         $user = $res['user'];
         $client = $this->userClientRepository->findOneBy(['User'=>$user,'id'=>$iduser]);
         if ($res) {
             if($client != null){
-                $em->remove($client);
-                $em->flush();
+                $entityManager->remove($client);
+                $entityManager->flush();
             }
             $this->isLogged($request,new JsonResponse(
                 ['message' => "Client supprimée"],
@@ -205,18 +205,18 @@ class ApiController extends AbstractController
     }
 
     #[Route('/api/add/user', name: 'app_api_user', methods: ['POST'])]
-    public function addUser(Request $request,EntityManagerInterface $em )
+    public function addUser(Request $request,EntityManagerInterface $entityManager )
     {
-        $res = $this->isLogged($request);
-        $user = $res['user'];
+        $responce = $this->isLogged($request);
+        $user = $responce['user'];
         $client = new UserClient;
         $data = $request->request->all();
         $client->setFirstname($data['firstname']);
         $client->setLastname($data['lastname']);
         $client->setUser($user);
-        if ($res) {
-            $em->remove($client);
-            $em->flush();
+        if ($responce) {
+            $entityManager->remove($client);
+            $entityManager->flush();
             return new JsonResponse(
                 ['message' => "client ajoutée"],
                 200
