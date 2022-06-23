@@ -65,7 +65,7 @@ class ApiController extends AbstractController
             );
         }else{
             $users = $this->userRepository->findAll();
-            foreach ($users as $key => $user) {
+            foreach ($users as $user) {
                 if ($user->getUsername() === $data['username']) {
                     if (password_verify($data['password'],$user->getPassword())) {
                         $issuedAt   = new DateTimeImmutable();
@@ -140,7 +140,7 @@ class ApiController extends AbstractController
 
     // Route pour afficher tous les produits -- consulter la liste des produits BileMo 
     #[Route('/api/produits/', name: 'app_api_produits', methods: ['GET'])]
-    public function produitspagin($userid,Request $request)
+    public function produitspagin(Request $request)
     {
         $res = $this->isLogged($request);
         $offset = $request->query->get('offset');
