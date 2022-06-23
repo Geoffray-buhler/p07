@@ -162,13 +162,13 @@ class ApiController extends AbstractController
     }
 
     // Route pour afficher un produit -- consulter les détails d’un produit BileMo ;
-    #[Route('/api/produit/{id}', name: 'app_api_produit', methods: ['GET'])]
-    public function produit($id,Request $request)
+    #[Route('/api/produit/{idproduct}', name: 'app_api_produit', methods: ['GET'])]
+    public function produit($idproduct,Request $request)
     {
         $res = $this->isLogged($request);
         if ($res) {
             return new JsonResponse(
-                ['users' => $this->Serializer->serialize($this->produitRepository->findOneBy(['id'=>$id]),JsonEncoder::FORMAT)],
+                ['users' => $this->Serializer->serialize($this->produitRepository->findOneBy(['id'=>$idproduct]),JsonEncoder::FORMAT)],
                 200,
                 ['Authorization'=>$res['jwt']]
             );
@@ -181,12 +181,12 @@ class ApiController extends AbstractController
     }
 
     // Route pour supprimer un utilisateur de l'api -- supprimer un utilisateur ajouté par un client.
-    #[Route('/api/delete/user/{id}', name: 'app_api_user', methods: ['DELETE'])]
-    public function deleteUser(int $id,Request $request,EntityManagerInterface $em )
+    #[Route('/api/delete/user/{iduser}', name: 'app_api_user', methods: ['DELETE'])]
+    public function deleteUser(int $iduser,Request $request,EntityManagerInterface $em )
     {
         $res = $this->isLogged($request);
         $user = $res['user'];
-        $client = $this->userClientRepository->findOneBy(['User'=>$user,'id'=>$id]);
+        $client = $this->userClientRepository->findOneBy(['User'=>$user,'id'=>$iduser]);
         if ($res) {
             if($client != null){
                 $em->remove($client);
