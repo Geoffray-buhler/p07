@@ -50,7 +50,7 @@ class CreateProduitCommand extends Command
 
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
-        $em = $this->entityManager;
+        $entityManager = $this->entityManager;
 
         // outputs multiple lines to the console (adding "\n" at the end of each line)
         $output->writeln([
@@ -82,8 +82,8 @@ class CreateProduitCommand extends Command
             'Prices : '.$input->getArgument('Prices')
         ]);
 
-        $em->persist($produit);
-        $em->flush();
+        $entityManager->persist($produit);
+        $entityManager->flush();
 
         $output->writeln('Produit successfully generated!');
 

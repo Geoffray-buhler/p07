@@ -50,7 +50,7 @@ class CreateUserCommand extends Command
 
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
-        $em = $this->entityManager;
+        $entityManager = $this->entityManager;
 
 
         // outputs multiple lines to the console (adding "\n" at the end of each line)
@@ -75,8 +75,8 @@ class CreateUserCommand extends Command
         $user->setUsername($input->getArgument('username'));
         $user->setEmail($input->getArgument('email'));
         
-        $em->persist($user);
-        $em->flush();
+        $entityManager->persist($user);
+        $entityManager->flush();
 
         $output->writeln('User successfully generated!');
 
