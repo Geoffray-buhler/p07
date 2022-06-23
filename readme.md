@@ -1,3 +1,4 @@
+[![Codacy Badge](https://api.codacy.com/project/badge/Grade/4297bf63841a444b98ef2cc6b798472f)](https://app.codacy.com/gh/Geoffray-buhler/p07?utm_source=github.com&utm_medium=referral&utm_content=Geoffray-buhler/p07&utm_campaign=Badge_Grade_Settings)
 [![Codacy Badge](https://app.codacy.com/project/badge/Grade/2b1cfcfe73044d12861a25809c11f852)](https://www.codacy.com/gh/Geoffray-buhler/p07/dashboard?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=Geoffray-buhler/p07&amp;utm_campaign=Badge_Grade)
 
 Pour utilisé cette API, il faut faire un clone de ce git : 
