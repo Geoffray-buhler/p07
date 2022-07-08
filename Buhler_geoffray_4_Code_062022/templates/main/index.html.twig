@@ -1,0 +1,24 @@
+{% extends 'base.html.twig' %}
+
+{% block body %}
+<div class="container">
+    <table style="width:100%;">
+        <thead style="width: 100%;justify-content: space-between;margin-bottom:1rem;">
+            <td><strong>Def</strong></td>
+            <td><strong>Route</strong></td>
+            <td><strong>Argument</strong></td>
+            <td><strong>Method</strong></td>
+        </thead>
+        <tbody>
+        {% for route in routes %}
+            <tr style="width: 100%;justify-content: space-between;margin-top:1rem;">
+                <td>{{ route.Definition }}</td>
+                <td>{{ route.path }}</td>
+                <td>{{ route.argument }}</td>
+                <td class="{% if route.method == 'POST' %}bg-warning{% elseif route.method == 'GET' %}bg-success{% elseif route.method == 'DELETE' %}bg-danger{% endif %}">{{ route.method }}</td>
+            </tr>
+        {% endfor %}
+        <tbody>
+    </table>
+</div>
+{% endblock %}
