@@ -64,51 +64,51 @@ class ApiController extends AbstractController
                 301
             );
         }else{
-            $users = $this->userRepository->findAll();
-            foreach ($users as $user) {
-                if ($user->getUsername() === $data['username']) {
-                    if (password_verify($data['password'],$user->getPassword())) {
-                        $issuedAt   = new DateTimeImmutable();
-                        $dataAuthorization = [
-                            'iat'  => $issuedAt->getTimestamp(), // Issued at:  : heure à laquelle le jeton a été généré
-                            'iss'  => $this->serverName,         // Émetteur
-                            'nbf'  => $issuedAt->getTimestamp(), // Pas avant..
-                            'userId' => $user->getId(),          // Id d'utilisateur
-                        ];
-                        return new JsonResponse(
-                            'ok'
-                            ,200
-                            ,['Authorization'=>'Bearer '.JWT::encode(
-                                $dataAuthorization,
-                                $this->secretKey,
-                                'HS512'
-                            )]
-                        );
-                    }else{
-                        return new JsonResponse(
-                            ['message' => 'Mauvais mot de passe !'],
-                            403
-                        );
-                    }
-                }else{
-                    return new JsonResponse(
-                        ['message' => 'Cet utilisateur n\'existe pas !'],
-                        404
-                    );
-                }
+            $user = $this->userRepository->findOneBy([ 'username' => $data['username'] ]);
+            if (password_verify($data['password'],$user->getPassword())) {
+                $issuedAt   = new DateTimeImmutable();
+                $dataAuthorization = [
+                    'iat'  => $issuedAt->getTimestamp(), // Issued at:  : heure à laquelle le jeton a été généré
+                    'iss'  => $this->serverName,         // Émetteur
+                    'nbf'  => $issuedAt->getTimestamp(), // Pas avant..
+                    'userId' => $user->getId(),          // Id d'utilisateur
+                ];
+                return new JsonResponse(
+                    'ok'
+                    ,200
+                    ,['Authorization'=>'Bearer '.JWT::encode(
+                        $dataAuthorization,
+                        $this->secretKey,
+                        'HS512'
+                    )]
+                );
+            }else{
+                return new JsonResponse(
+                    ['message' => 'Mauvais mot de passe !'],
+                    403
+                );
+            }
+            if (empty($user)) {
+                return new JsonResponse(
+                    ['message' => 'Cet utilisateur n\'existe pas !'],
+                    404
+                );
             }
         }
     }
 
     // Route pour afficher les utilisateur de l'api plus tous leur clients -- consulter la liste des utilisateurs inscrits liés à un client sur le site web ;
-    #[Route('/api/user/', name: 'app_api_user_allclients', methods: ['GET'])]
+    #[Route('/api/user/me/clients', name: 'app_api_user_allclients', methods: ['GET'])]
     public function user(Request $request)
     {
         $res = $this->isLogged($request);
-        $user = $res['user'];
         if ($res) {
+            $user = $res['user'];
+            $offset = $request->query->get('offset');
+            $page = $request->query->get('page');
+            $clients = $this->userClientRepository->findOneBy(['user'=>$user],[$offset],[$page]);
             return new JsonResponse(
-                ['user' => $this->Serializer->serialize($user,JsonEncoder::FORMAT)],200,['Authorization'=>$res['jwt']]);
+                ['user' => $this->Serializer->serialize($clients,JsonEncoder::FORMAT)],200,['Authorization'=>$res['jwt']]);
         }else{
             return new JsonResponse(
                 ['message'=>$this->errormsg],
@@ -122,9 +122,9 @@ class ApiController extends AbstractController
     public function userclient(int $idclient,Request $request)
     {
         $res = $this->isLogged($request);
-        $user = $res['user'];
-        $client = $this->userClientRepository->findOneBy(['User'=>$user,'id'=>$idclient]);
         if ($res) {
+            $user = $res['user'];
+            $client = $this->userClientRepository->findOneBy(['User'=>$user,'id'=>$idclient]);
             return new JsonResponse([
                 'client' => $this->Serializer->serialize($client,JsonEncoder::FORMAT)],
                 200,
@@ -143,11 +143,11 @@ class ApiController extends AbstractController
     public function produitspagin(Request $request)
     {
         $res = $this->isLogged($request);
-        $offset = $request->query->get('offset');
-        $limit = $request->query->get('limit');
-        $user = $res['user'];
-        $produit = $this->produitRepository->findBy(['client'=>$user],null,$limit,$offset);
         if ($res) {
+            $offset = $request->query->get('offset');
+            $limit = $request->query->get('limit');
+            $user = $res['user'];
+            $produit = $this->produitRepository->findBy(['client'=>$user],null,$limit,$offset);
             return new JsonResponse([
                 'users' => $this->Serializer->serialize($produit,JsonEncoder::FORMAT)],
                 200,
@@ -185,9 +185,9 @@ class ApiController extends AbstractController
     public function deleteUser(int $iduser,Request $request,EntityManagerInterface $entityManager )
     {
         $res = $this->isLogged($request);
-        $user = $res['user'];
-        $client = $this->userClientRepository->findOneBy(['User'=>$user,'id'=>$iduser]);
         if ($res) {
+            $user = $res['user'];
+            $client = $this->userClientRepository->findOneBy(['User'=>$user,'id'=>$iduser]);
             if($client != null){
                 $entityManager->remove($client);
                 $entityManager->flush();
@@ -208,13 +208,13 @@ class ApiController extends AbstractController
     public function addUser(Request $request,EntityManagerInterface $entityManager )
     {
         $responce = $this->isLogged($request);
-        $user = $responce['user'];
-        $client = new UserClient;
-        $data = $request->request->all();
-        $client->setFirstname($data['firstname']);
-        $client->setLastname($data['lastname']);
-        $client->setUser($user);
         if ($responce) {
+            $user = $responce['user'];
+            $client = new UserClient;
+            $data = $request->request->all();
+            $client->setFirstname($data['firstname']);
+            $client->setLastname($data['lastname']);
+            $client->setUser($user);
             $entityManager->remove($client);
             $entityManager->flush();
             return new JsonResponse(
