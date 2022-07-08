@@ -31,15 +31,13 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Column(type: 'string', length: 70)]
     private $Email;
 
-    #[ORM\Column(type: 'string', length: 255, nullable: true)]
-    private $Token;
-
-    #[ORM\OneToMany(mappedBy: 'User', targetEntity: UserClient::class)]
-    private $userClients;
+    #[ORM\ManyToMany(targetEntity: UserClient::class)]
+    private $User;
 
     public function __construct()
     {
-        $this->userClients = new ArrayCollection();
+        $this->UserClient = new ArrayCollection();
+        $this->User = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -124,44 +122,26 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         return $this;
     }
 
-    public function getToken(): ?string
-    {
-        return $this->Token;
-    }
-
-    public function setToken(?string $Token): self
-    {
-        $this->Token = $Token;
-
-        return $this;
-    }
-
     /**
      * @return Collection<int, UserClient>
      */
-    public function getUserClients(): Collection
+    public function getUser(): Collection
     {
-        return $this->userClients;
+        return $this->User;
     }
 
-    public function addUserClient(UserClient $userClient): self
+    public function addUser(UserClient $user): self
     {
-        if (!$this->userClients->contains($userClient)) {
-            $this->userClients[] = $userClient;
-            $userClient->setUser($this);
+        if (!$this->User->contains($user)) {
+            $this->User[] = $user;
         }
 
         return $this;
     }
 
-    public function removeUserClient(UserClient $userClient): self
+    public function removeUser(UserClient $user): self
     {
-        if ($this->userClients->removeElement($userClient)) {
-            // set the owning side to null (unless already changed)
-            if ($userClient->getUser() === $this) {
-                $userClient->setUser(null);
-            }
-        }
+        $this->User->removeElement($user);
 
         return $this;
     }

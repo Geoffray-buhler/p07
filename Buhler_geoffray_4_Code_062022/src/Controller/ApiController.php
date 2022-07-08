@@ -43,16 +43,18 @@ class ApiController extends AbstractController
     public function main()
     {
         $routes = [
-            ["Definition"=>'Permet de ce connecté','path'=>'/api/connect','method'=>'POST','argument'=>'{"username":Votre nom,"password":Votre mot de passe}'],
+            ["Definition"=>"Permet de ce connecté",'path'=>'/api/connect','method'=>'POST','argument'=>'{"username":Votre nom,"password":Votre mot de passe}'],
             ["Definition"=>"Permet de voir les infos d'un utilisateur",'path'=>'/api/users','method'=>'GET','argument'=>''],
             ["Definition"=>"Permet de voir les details d'un client",'path'=>'/api/user/client/{idclient}','method'=>'GET','argument'=>''],
             ["Definition"=>"Permet de voir les infos des produits",'path'=>'/api/produits/','method'=>'GET','argument'=>''], 
             ["Definition"=>"Permet de voir les details d'un produits",'path'=>'/api/produit/{id}','method'=>'GET','argument'=>''],
-            ["Definition"=>'Permet de supprimée un client','path'=>'/api/delete/user/{id}','method'=>'DELETE','argument'=>''],
+            ["Definition"=>"Permet de supprimée un client",'path'=>'/api/delete/user/{id}','method'=>'DELETE','argument'=>''],
             ["Definition"=>"Permet d'ajoutée un client",'path'=>'/api/add/user','method'=>'POST','argument'=>''],
         ];
         return $this->render('main/index.html.twig',['routes'=>$routes]);
     }
+
+    // consulté la liste des utilisateur inscrit sur un client. suppréssion, PSR a connaitre,
 
     #[Route('/api/connect', name: 'app_api_connect', methods: ['POST'])]
     public function connect(Request $request): Response
@@ -75,7 +77,7 @@ class ApiController extends AbstractController
                 ];
                 return new JsonResponse(
                     'ok'
-                    ,200
+                    ,201
                     ,['Authorization'=>'Bearer '.JWT::encode(
                         $dataAuthorization,
                         $this->secretKey,
@@ -98,17 +100,17 @@ class ApiController extends AbstractController
     }
 
     // Route pour afficher les utilisateur de l'api plus tous leur clients -- consulter la liste des utilisateurs inscrits liés à un client sur le site web ;
-    #[Route('/api/user/me/clients', name: 'app_api_user_allclients', methods: ['GET'])]
+    #[Route('/api/user/clients', name: 'app_api_user_allclients', methods: ['GET'])]
     public function user(Request $request)
     {
         $res = $this->isLogged($request);
         if ($res) {
             $user = $res['user'];
-            $offset = $request->query->get('offset');
-            $page = $request->query->get('page');
-            $clients = $this->userClientRepository->findOneBy(['user'=>$user],[$offset],[$page]);
-            return new JsonResponse(
-                ['user' => $this->Serializer->serialize($clients,JsonEncoder::FORMAT)],200,['Authorization'=>$res['jwt']]);
+            return new JsonResponse([
+                'user' => $this->Serializer->serialize($user,JsonEncoder::FORMAT)
+            ],200,[
+                'Authorization'=>$res['jwt']
+            ]);
         }else{
             return new JsonResponse(
                 ['message'=>$this->errormsg],
@@ -146,10 +148,9 @@ class ApiController extends AbstractController
         if ($res) {
             $offset = $request->query->get('offset');
             $limit = $request->query->get('limit');
-            $user = $res['user'];
-            $produit = $this->produitRepository->findBy(['client'=>$user],null,$limit,$offset);
+            $produit = $this->produitRepository->findBy([],null,$limit,$offset);
             return new JsonResponse([
-                'users' => $this->Serializer->serialize($produit,JsonEncoder::FORMAT)],
+                'Produits' => $this->Serializer->serialize($produit,JsonEncoder::FORMAT)],
                 200,
                 ['Authorization'=>$res['jwt']]
             );
@@ -168,7 +169,7 @@ class ApiController extends AbstractController
         $res = $this->isLogged($request);
         if ($res) {
             return new JsonResponse(
-                ['users' => $this->Serializer->serialize($this->produitRepository->findOneBy(['id'=>$idproduct]),JsonEncoder::FORMAT)],
+                ['Produits' => $this->Serializer->serialize($this->produitRepository->findOneBy(['id'=>$idproduct]),JsonEncoder::FORMAT)],
                 200,
                 ['Authorization'=>$res['jwt']]
             );
@@ -188,13 +189,16 @@ class ApiController extends AbstractController
         if ($res) {
             $user = $res['user'];
             $client = $this->userClientRepository->findOneBy(['User'=>$user,'id'=>$iduser]);
+            if (in_array("ROLE_ADMIN",$user->getRoles())) {
+                $client = $this->userClientRepository->findOneBy(['id'=>$iduser]);
+            }
             if($client != null){
                 $entityManager->remove($client);
                 $entityManager->flush();
             }
             $this->isLogged($request,new JsonResponse(
                 ['message' => "Client supprimée"],
-                200
+                204
             ));
         }else{
             return new JsonResponse(
@@ -203,7 +207,7 @@ class ApiController extends AbstractController
             );
         }
     }
-
+    // Route pour ajouter un utilisateur de l'api -- ajouter un utilisateur a un client.
     #[Route('/api/add/user', name: 'app_api_user', methods: ['POST'])]
     public function addUser(Request $request,EntityManagerInterface $entityManager )
     {
@@ -214,8 +218,8 @@ class ApiController extends AbstractController
             $data = $request->request->all();
             $client->setFirstname($data['firstname']);
             $client->setLastname($data['lastname']);
-            $client->setUser($user);
-            $entityManager->remove($client);
+            $user->addUserClient($client);
+            $entityManager->persist($client);
             $entityManager->flush();
             return new JsonResponse(
                 ['message' => "client ajoutée"],

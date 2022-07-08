@@ -22,13 +22,8 @@ class UserClient
     #[ORM\Column(type: 'string', length: 30)]
     private $lastname;
 
-    #[ORM\ManyToOne(targetEntity: User::class, inversedBy: 'userClients')]
-    #[ORM\JoinColumn(nullable: false)]
-    private $User;
-
     public function __construct()
     {
-        $this->User = new ArrayCollection();
         $this->produits = new ArrayCollection();
     }
 
@@ -57,18 +52,6 @@ class UserClient
     public function setLastname(string $lastname): self
     {
         $this->lastname = $lastname;
-
-        return $this;
-    }
-
-    public function getUser(): ?User
-    {
-        return $this->User;
-    }
-
-    public function setUser(?User $User): self
-    {
-        $this->User = $User;
 
         return $this;
     }
