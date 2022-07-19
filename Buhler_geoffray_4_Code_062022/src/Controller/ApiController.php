@@ -6,10 +6,12 @@ use Firebase\JWT\JWT;
 use Firebase\JWT\Key;
 use DateTimeImmutable;
 use App\Entity\UserClient;
+use OpenApi\Attributes as OA;
 use App\Repository\UserRepository;
 use App\Repository\ProduitRepository;
 use App\Repository\UserClientRepository;
 use Doctrine\ORM\EntityManagerInterface;
+use Nelmio\ApiDocBundle\Annotation\Security;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
@@ -20,7 +22,8 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 
 class ApiController extends AbstractController
 {
-    // Authorization
+
+    // Authorization.
     public function __construct(UserRepository $userRepository, ProduitRepository $produitRepository, UserClientRepository $userClientRepository,SerializerInterface $serializer)
     {
         $this->userRepository = $userRepository;
@@ -36,30 +39,37 @@ class ApiController extends AbstractController
     #[Route('/', name: 'app')]
     public function redirecttomain()
     {
-        return $this->redirectToRoute('app_apidocs');
+        return $this->redirect('/doc');
     }
 
-    #[Route('/apidocs', name: 'app_apidocs')]
-    public function main()
-    {
-        $routes = [
-            ["Definition"=>"Permet de ce connecté",'path'=>'/api/connect','method'=>'POST','argument'=>'{"username":Votre nom,"password":Votre mot de passe}'],
-            ["Definition"=>"Permet de voir les infos d'un utilisateur",'path'=>'/api/users','method'=>'GET','argument'=>''],
-            ["Definition"=>"Permet de voir les details d'un client",'path'=>'/api/user/client/{idclient}','method'=>'GET','argument'=>''],
-            ["Definition"=>"Permet de voir les infos des produits",'path'=>'/api/produits/','method'=>'GET','argument'=>''], 
-            ["Definition"=>"Permet de voir les details d'un produits",'path'=>'/api/produit/{id}','method'=>'GET','argument'=>''],
-            ["Definition"=>"Permet de supprimée un client",'path'=>'/api/delete/user/{id}','method'=>'DELETE','argument'=>''],
-            ["Definition"=>"Permet d'ajoutée un client",'path'=>'/api/add/user','method'=>'POST','argument'=>''],
-        ];
-        return $this->render('main/index.html.twig',['routes'=>$routes]);
-    }
-
-    // consulté la liste des utilisateur inscrit sur un client. suppréssion, PSR a connaitre,
-
+    // consulté la liste des utilisateur inscrit sur un client. suppréssion, PSR a connaitre.
     #[Route('/api/connect', name: 'app_api_connect', methods: ['POST'])]
+    #[OA\Tag(name: 'Connexion')]
+    #[OA\Response(
+        response: 201,
+        description: 'Returns the user infomations and token',
+        content: new OA\JsonContent(
+            type: 'array',
+            items: new OA\Items()
+        )
+    )]
+    #[OA\RequestBody(
+        content: [new OA\JsonContent(
+            type:'array',
+            items: new OA\Items(['"password":"","username":""']),
+            required: [true]
+        )]
+    )]
+
+    #[OA\Response(response: 403,description: 'Wrong user information')]
+    #[OA\Response(response: 404,description: 'User not found')]
+    #[OA\Response(response: 500,description: 'ERROR')]
+    #[Security(name: 'Bearer')]
+        
     public function connect(Request $request): Response
     {
         $data = $request->request->all();
+        dd($data);
         if ($this->getUser() !== null) {
             return new JsonResponse(
                 ['message'=>'Vous etes deja connecté !'],
@@ -68,7 +78,7 @@ class ApiController extends AbstractController
         }else{
             $user = $this->userRepository->findOneBy([ 'username' => $data['username'] ]);
             if (password_verify($data['password'],$user->getPassword())) {
-                $issuedAt   = new DateTimeImmutable();
+                $issuedAt = new DateTimeImmutable();
                 $dataAuthorization = [
                     'iat'  => $issuedAt->getTimestamp(), // Issued at:  : heure à laquelle le jeton a été généré
                     'iss'  => $this->serverName,         // Émetteur
@@ -99,15 +109,17 @@ class ApiController extends AbstractController
         }
     }
 
-    // Route pour afficher les utilisateur de l'api plus tous leur clients -- consulter la liste des utilisateurs inscrits liés à un client sur le site web ;
-    #[Route('/api/user/clients', name: 'app_api_user_allclients', methods: ['GET'])]
+    // Route pour afficher les utilisateur de l'api plus tous leur clients -- consulter la liste des utilisateurs inscrits liés à un client sur le site web.
+    #[Route('/api/user/{iduser}/clients', name: 'app_api_user_allclients', methods: ['GET'])]
+    #[OA\Tag(name: 'User')]
     public function user(Request $request)
     {
         $res = $this->isLogged($request);
         if ($res) {
             $user = $res['user'];
+            $clients = $this->userClientRepository->findOneBy(['User'=>$user]);
             return new JsonResponse([
-                'user' => $this->Serializer->serialize($user,JsonEncoder::FORMAT)
+                'user' => $this->Serializer->serialize($clients,JsonEncoder::FORMAT)
             ],200,[
                 'Authorization'=>$res['jwt']
             ]);
@@ -119,8 +131,9 @@ class ApiController extends AbstractController
         }
     }
 
-    // Route pour afficher un client en particulier d'un utilisateur de l'api -- consulter le détail d’un utilisateur inscrit lié à un client ;
-    #[Route('/api/user/client/{idclient}', name: 'app_api_user_client', methods: ['GET'])]
+    // Route pour afficher un client en particulier d'un utilisateur de l'api -- consulter le détail d’un utilisateur inscrit lié à un client.
+    #[Route('/api/user/{iduser}/client/{idclient}', name: 'app_api_user_client', methods: ['GET'])]
+    #[OA\Tag(name: 'User')]
     public function userclient(int $idclient,Request $request)
     {
         $res = $this->isLogged($request);
@@ -140,8 +153,9 @@ class ApiController extends AbstractController
         }
     }
 
-    // Route pour afficher tous les produits -- consulter la liste des produits BileMo 
-    #[Route('/api/produits/', name: 'app_api_produits', methods: ['GET'])]
+    // Route pour afficher tous les produits -- consulter la liste des produits BileMo.
+    #[Route('/api/produits/all', name: 'app_api_produits', methods: ['GET'])]
+    #[OA\Tag(name: 'Product')]
     public function produitspagin(Request $request)
     {
         $res = $this->isLogged($request);
@@ -162,8 +176,9 @@ class ApiController extends AbstractController
         }
     }
 
-    // Route pour afficher un produit -- consulter les détails d’un produit BileMo ;
+    // Route pour afficher un produit -- consulter les détails d’un produit BileMo.
     #[Route('/api/produit/{idproduct}', name: 'app_api_produit', methods: ['GET'])]
+    #[OA\Tag(name: 'Product')]
     public function produit($idproduct,Request $request)
     {
         $res = $this->isLogged($request);
@@ -182,7 +197,8 @@ class ApiController extends AbstractController
     }
 
     // Route pour supprimer un utilisateur de l'api -- supprimer un utilisateur ajouté par un client.
-    #[Route('/api/delete/user/{iduser}', name: 'app_api_user', methods: ['DELETE'])]
+    #[Route('/api/user/{iduser}/delete/client/{idclient}', name: 'app_api_delete_client', methods: ['DELETE'])]
+    #[OA\Tag(name: 'User')]
     public function deleteUser(int $iduser,Request $request,EntityManagerInterface $entityManager )
     {
         $res = $this->isLogged($request);
@@ -207,8 +223,10 @@ class ApiController extends AbstractController
             );
         }
     }
+
     // Route pour ajouter un utilisateur de l'api -- ajouter un utilisateur a un client.
-    #[Route('/api/add/user', name: 'app_api_user', methods: ['POST'])]
+    #[Route('/api/user/{iduser}/add/client', name: 'app_api_client', methods: ['POST'])]
+    #[OA\Tag(name: 'User')]
     public function addUser(Request $request,EntityManagerInterface $entityManager )
     {
         $responce = $this->isLogged($request);
@@ -235,9 +253,8 @@ class ApiController extends AbstractController
 
     private function isLogged(Request $request)
     {
-        // SWAGGER / openAPI C'est de la merde 
         if ($request->headers->has('Authorization')) {
-            $jwt = str_replace('Bearer ','',$request->headers->get('Authorization'));
+            $jwt = str_replace('Bearer ', '', $request->headers->get('Authorization'));
             $jwtdecoded = $this->decodeJWT($jwt);
             $iduser = $jwtdecoded->userId;
             $user = $this->userRepository->findOneBy(['id'=>$iduser]);
