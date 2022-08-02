@@ -234,7 +234,7 @@ class ApiController extends AbstractController
     #[Route('/api/user/{iduser}/add/client', name: 'app_api_client', methods: ['POST'])]
     #[OA\Tag(name: 'User')]
     #[OA\RequestBody(
-        content: new OA\JsonContent(title :"data",example:'{"firstname":"test","lastname":"test","Phone Number":"00.00.00.00.00"}'),
+        content: new OA\JsonContent(title :"data",example:'{"firstname":"test","lastname":"test","Phone_Number":"00.00.00.00.00"}'),
         required: true,
         description:"Demande du firstname et lastname en json",
     )]
@@ -248,7 +248,7 @@ class ApiController extends AbstractController
             $datadecoded = json_decode($data,true);
             $client->setFirstname($datadecoded['firstname']);
             $client->setLastname($datadecoded['lastname']);
-            $client->setPhoneNumber($datadecoded['lastname']);
+            $client->setPhoneNumber($datadecoded['Phone_Number']);
             $client->addUser($user);
             $entityManager->persist($client);
             $entityManager->flush();
