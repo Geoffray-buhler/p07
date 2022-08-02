@@ -7,18 +7,15 @@ use Firebase\JWT\Key;
 use App\Entity\Client;
 use DateTimeImmutable;
 use OpenApi\Attributes as OA;
-use OpenApi\Annotations\Examples;
 use App\Repository\UserRepository;
 use App\Repository\ClientRepository;
 use App\Repository\ProduitRepository;
-use ApiPlatform\Core\JsonSchema\Schema;
 use Doctrine\ORM\EntityManagerInterface;
 use Nelmio\ApiDocBundle\Annotation\Security;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\HttpFoundation\JsonResponse;
-use phpDocumentor\Reflection\DocBlock\Tags\Example;
 use Symfony\Component\Serializer\Encoder\JsonEncoder;
 use Symfony\Component\Serializer\SerializerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -237,7 +234,7 @@ class ApiController extends AbstractController
     #[Route('/api/user/{iduser}/add/client', name: 'app_api_client', methods: ['POST'])]
     #[OA\Tag(name: 'User')]
     #[OA\RequestBody(
-        content: new OA\JsonContent(title :"data",example:'{"firstname":"test","lastname":"test"}'),
+        content: new OA\JsonContent(title :"data",example:'{"firstname":"test","lastname":"test","Phone Number":"00.00.00.00.00"}'),
         required: true,
         description:"Demande du firstname et lastname en json",
     )]
@@ -251,6 +248,7 @@ class ApiController extends AbstractController
             $datadecoded = json_decode($data,true);
             $client->setFirstname($datadecoded['firstname']);
             $client->setLastname($datadecoded['lastname']);
+            $client->setPhoneNumber($datadecoded['lastname']);
             $client->addUser($user);
             $entityManager->persist($client);
             $entityManager->flush();
