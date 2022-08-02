@@ -26,6 +26,9 @@ class Client
     #[ORM\ManyToMany(targetEntity: User::class)]
     private $user;
 
+    #[ORM\Column(type: 'string', length: 15)]
+    private $phoneNumber;
+
     public function __construct()
     {
         $this->produits = new ArrayCollection();
@@ -81,6 +84,18 @@ class Client
     public function removeUser(User $user): self
     {
         $this->user->removeElement($user);
+
+        return $this;
+    }
+
+    public function getPhoneNumber(): ?string
+    {
+        return $this->phoneNumber;
+    }
+
+    public function setPhoneNumber(string $phoneNumber): self
+    {
+        $this->phoneNumber = $phoneNumber;
 
         return $this;
     }
