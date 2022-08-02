@@ -4,18 +4,21 @@ namespace App\Controller;
 
 use Firebase\JWT\JWT;
 use Firebase\JWT\Key;
+use App\Entity\Client;
 use DateTimeImmutable;
-use App\Entity\UserClient;
 use OpenApi\Attributes as OA;
+use OpenApi\Annotations\Examples;
 use App\Repository\UserRepository;
+use App\Repository\ClientRepository;
 use App\Repository\ProduitRepository;
-use App\Repository\UserClientRepository;
+use ApiPlatform\Core\JsonSchema\Schema;
 use Doctrine\ORM\EntityManagerInterface;
 use Nelmio\ApiDocBundle\Annotation\Security;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\HttpFoundation\JsonResponse;
+use phpDocumentor\Reflection\DocBlock\Tags\Example;
 use Symfony\Component\Serializer\Encoder\JsonEncoder;
 use Symfony\Component\Serializer\SerializerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -24,7 +27,7 @@ class ApiController extends AbstractController
 {
 
     // Authorization.
-    public function __construct(UserRepository $userRepository, ProduitRepository $produitRepository, UserClientRepository $userClientRepository,SerializerInterface $serializer)
+    public function __construct(UserRepository $userRepository, ProduitRepository $produitRepository, ClientRepository $userClientRepository,SerializerInterface $serializer)
     {
         $this->userRepository = $userRepository;
         $this->produitRepository = $produitRepository;
@@ -54,13 +57,10 @@ class ApiController extends AbstractController
         )
     )]
     #[OA\RequestBody(
-        content: [new OA\JsonContent(
-            type:'array',
-            items: new OA\Items(['"password":"","username":""']),
-            required: [true]
-        )]
+        content: new OA\JsonContent(title :"data",example:'{"password":"test","username":"test"}'),
+        required: true,
+        description:"Demande Password et username en json",
     )]
-
     #[OA\Response(response: 403,description: 'Wrong user information')]
     #[OA\Response(response: 404,description: 'User not found')]
     #[OA\Response(response: 500,description: 'ERROR')]
@@ -68,16 +68,17 @@ class ApiController extends AbstractController
         
     public function connect(Request $request): Response
     {
-        $data = $request->request->all();
-        dd($data);
+        $data = $request->getContent();
+        $datadecoded = json_decode($data,true);
+
         if ($this->getUser() !== null) {
             return new JsonResponse(
                 ['message'=>'Vous etes deja connecté !'],
                 301
             );
         }else{
-            $user = $this->userRepository->findOneBy([ 'username' => $data['username'] ]);
-            if (password_verify($data['password'],$user->getPassword())) {
+            $user = $this->userRepository->findOneBy(['username'=>$datadecoded['username']]);
+            if (password_verify($datadecoded['password'],$user->getPassword())) {
                 $issuedAt = new DateTimeImmutable();
                 $dataAuthorization = [
                     'iat'  => $issuedAt->getTimestamp(), // Issued at:  : heure à laquelle le jeton a été généré
@@ -86,13 +87,12 @@ class ApiController extends AbstractController
                     'userId' => $user->getId(),          // Id d'utilisateur
                 ];
                 return new JsonResponse(
-                    'ok'
-                    ,201
-                    ,['Authorization'=>'Bearer '.JWT::encode(
+                    ['token' => 'Bearer '.JWT::encode(
                         $dataAuthorization,
                         $this->secretKey,
                         'HS512'
                     )]
+                    ,201
                 );
             }else{
                 return new JsonResponse(
@@ -115,9 +115,18 @@ class ApiController extends AbstractController
     public function user(Request $request)
     {
         $res = $this->isLogged($request);
+        
         if ($res) {
             $user = $res['user'];
-            $clients = $this->userClientRepository->findOneBy(['User'=>$user]);
+            try {
+                $clients = $this->userClientRepository->findBy(['user'=>$user]);
+            } catch (\Throwable $th) {
+                return new JsonResponse([
+                    'message' => 'il y a aucun client en BDD !'
+                ],404,[
+                    'Authorization'=>$res['jwt']
+                ]);
+            }
             return new JsonResponse([
                 'user' => $this->Serializer->serialize($clients,JsonEncoder::FORMAT)
             ],200,[
@@ -227,16 +236,22 @@ class ApiController extends AbstractController
     // Route pour ajouter un utilisateur de l'api -- ajouter un utilisateur a un client.
     #[Route('/api/user/{iduser}/add/client', name: 'app_api_client', methods: ['POST'])]
     #[OA\Tag(name: 'User')]
+    #[OA\RequestBody(
+        content: new OA\JsonContent(title :"data",example:'{"firstname":"test","lastname":"test"}'),
+        required: true,
+        description:"Demande du firstname et lastname en json",
+    )]
     public function addUser(Request $request,EntityManagerInterface $entityManager )
     {
         $responce = $this->isLogged($request);
         if ($responce) {
             $user = $responce['user'];
-            $client = new UserClient;
-            $data = $request->request->all();
-            $client->setFirstname($data['firstname']);
-            $client->setLastname($data['lastname']);
-            $user->addUserClient($client);
+            $client = new Client;
+            $data = $request->getContent();
+            $datadecoded = json_decode($data,true);
+            $client->setFirstname($datadecoded['firstname']);
+            $client->setLastname($datadecoded['lastname']);
+            $client->addUser($user);
             $entityManager->persist($client);
             $entityManager->flush();
             return new JsonResponse(

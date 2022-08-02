@@ -2,32 +2,32 @@
 
 namespace App\Repository;
 
-use App\Entity\UserClient;
-use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
-use Doctrine\ORM\OptimisticLockException;
+use App\Entity\Client;
 use Doctrine\ORM\ORMException;
+use Doctrine\ORM\OptimisticLockException;
 use Doctrine\Persistence\ManagerRegistry;
+use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 
 /**
  * @extends ServiceEntityRepository<UserClient>
  *
- * @method UserClient|null find($id, $lockMode = null, $lockVersion = null)
- * @method UserClient|null findOneBy(array $criteria, array $orderBy = null)
- * @method UserClient[]    findAll()
- * @method UserClient[]    findBy(array $criteria, array $orderBy = null, $limit = null, $offset = null)
+ * @method Client|null find($id, $lockMode = null, $lockVersion = null)
+ * @method Client|null findOneBy(array $criteria, array $orderBy = null)
+ * @method Client[]    findAll()
+ * @method Client[]    findBy(array $criteria, array $orderBy = null, $limit = null, $offset = null)
  */
-class UserClientRepository extends ServiceEntityRepository
+class ClientRepository extends ServiceEntityRepository
 {
     public function __construct(ManagerRegistry $registry)
     {
-        parent::__construct($registry, UserClient::class);
+        parent::__construct($registry, Client::class);
     }
 
     /**
      * @throws ORMException
      * @throws OptimisticLockException
      */
-    public function add(UserClient $entity, bool $flush = true): void
+    public function add(Client $entity, bool $flush = true): void
     {
         $this->_em->persist($entity);
         if ($flush) {
@@ -39,7 +39,7 @@ class UserClientRepository extends ServiceEntityRepository
      * @throws ORMException
      * @throws OptimisticLockException
      */
-    public function remove(UserClient $entity, bool $flush = true): void
+    public function remove(Client $entity, bool $flush = true): void
     {
         $this->_em->remove($entity);
         if ($flush) {

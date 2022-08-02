@@ -2,14 +2,15 @@
 
 namespace App\Entity;
 
-use App\Repository\UserClientRepository;
+use App\Repository\ClientRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use ApiPlatform\Core\Annotation\ApiResource;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 
-#[ORM\Entity(repositoryClass: UserClientRepository::class)]
+#[ORM\Entity(repositoryClass: ClientRepository::class)]
 #[ApiResource]
-class UserClient
+class Client
 {
     #[ORM\Id]
     #[ORM\GeneratedValue]
@@ -22,9 +23,13 @@ class UserClient
     #[ORM\Column(type: 'string', length: 30)]
     private $lastname;
 
+    #[ORM\ManyToMany(targetEntity: User::class)]
+    private $user;
+
     public function __construct()
     {
         $this->produits = new ArrayCollection();
+        $this->user = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -52,6 +57,30 @@ class UserClient
     public function setLastname(string $lastname): self
     {
         $this->lastname = $lastname;
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, User>
+     */
+    public function getUser(): Collection
+    {
+        return $this->user;
+    }
+
+    public function addUser(User $user): self
+    {
+        if (!$this->user->contains($user)) {
+            $this->user[] = $user;
+        }
+
+        return $this;
+    }
+
+    public function removeUser(User $user): self
+    {
+        $this->user->removeElement($user);
 
         return $this;
     }
