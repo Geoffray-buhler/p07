@@ -23,16 +23,17 @@ class Client
     #[ORM\Column(type: 'string', length: 30)]
     private $lastname;
 
-    #[ORM\ManyToMany(targetEntity: User::class)]
-    private $user;
-
     #[ORM\Column(type: 'string', length: 15)]
     private $phoneNumber;
+
+    #[ORM\ManyToMany(targetEntity: User::class)]
+    private $User;
 
     public function __construct()
     {
         $this->produits = new ArrayCollection();
         $this->user = new ArrayCollection();
+        $this->User = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -64,30 +65,6 @@ class Client
         return $this;
     }
 
-    /**
-     * @return Collection<int, User>
-     */
-    public function getUser(): Collection
-    {
-        return $this->user;
-    }
-
-    public function addUser(User $user): self
-    {
-        if (!$this->user->contains($user)) {
-            $this->user[] = $user;
-        }
-
-        return $this;
-    }
-
-    public function removeUser(User $user): self
-    {
-        $this->user->removeElement($user);
-
-        return $this;
-    }
-
     public function getPhoneNumber(): ?string
     {
         return $this->phoneNumber;
@@ -96,6 +73,30 @@ class Client
     public function setPhoneNumber(string $phoneNumber): self
     {
         $this->phoneNumber = $phoneNumber;
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, User>
+     */
+    public function getUser(): Collection
+    {
+        return $this->User;
+    }
+
+    public function addUser(User $user): self
+    {
+        if (!$this->User->contains($user)) {
+            $this->User[] = $user;
+        }
+
+        return $this;
+    }
+
+    public function removeUser(User $user): self
+    {
+        $this->User->removeElement($user);
 
         return $this;
     }

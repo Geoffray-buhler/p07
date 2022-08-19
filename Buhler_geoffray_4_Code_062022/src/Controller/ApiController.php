@@ -112,18 +112,10 @@ class ApiController extends AbstractController
     public function user(Request $request)
     {
         $res = $this->isLogged($request);
-        
         if ($res) {
-            $user = $res['user'];
-            try {
-                $clients = $this->userClientRepository->findBy(['user'=>$user]);
-            } catch (\Throwable $th) {
-                return new JsonResponse([
-                    'message' => 'il y a aucun client en BDD !'
-                ],404,[
-                    'Authorization'=>$res['jwt']
-                ]);
-            }
+            $user = $this->userRepository->findBy(['id'=>$res['user']->getId()]);
+            $clients = $this->userClientRepository->findBy(['User'=>$user]);
+            dd($clients,$user);
             return new JsonResponse([
                 'user' => $this->Serializer->serialize($clients,JsonEncoder::FORMAT)
             ],200,[
