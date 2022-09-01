@@ -1,0 +1,17 @@
+api_platform:
+    # The title of the API.
+    title: "BilMo l'api qu'il vous faut"
+    # The description of the API.
+    description: "L'api Bilmo permet a des application de recuperer des infos pour les produit bilmo"
+    # The version of the API.
+    version: '0.0.1'
+    mapping:
+        paths: ['%kernel.project_dir%/src/Entity']
+    patch_formats:
+        json: ['application/merge-patch+json']
+    swagger:
+        versions: [3]
+        api_keys:
+             JWT:
+                name: Authorization
+                type: header
