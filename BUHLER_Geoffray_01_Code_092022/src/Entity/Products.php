@@ -5,19 +5,27 @@ namespace App\Entity;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use App\Repository\ProductsRepository;
+use ApiPlatform\Core\Annotation\ApiFilter;
 use ApiPlatform\Core\Annotation\ApiResource;
+use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\RangeFilter;
 use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 
 #[ORM\Entity(repositoryClass: ProductsRepository::class)]
 #[UniqueEntity(fields:['name'],message:'Ce produit existe deja' )]
+#[ApiFilter(RangeFilter::class, properties: ['price'])]
 #[ApiResource(
     formats: ['json'],
+    attributes:[
+        'order' => ['price' => 'ASC'],
+        "pagination_maximum_items_per_page" => 10
+    ],
     collectionOperations: [
         "GET"
-],
+    ],
     itemOperations: [
         "GET"
-])]
+    ])]
+
 class Products
 {
     #[ORM\Id]
