@@ -2,6 +2,7 @@
 // src/Command/CreateUserCommand.php
 namespace App\Command;
 
+use App\Entity\Products;
 use App\Entity\Produit;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\Console\Command\Command;
@@ -12,10 +13,10 @@ use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 
 #[AsCommand(
-    name: 'app:create-produit',
+    name: 'app:create-product',
     description: 'Creates a new produit.',
     hidden: false,
-    aliases: ['app:add-produit']
+    aliases: ['app:add-product']
 )]
 
 class CreateProduitCommand extends Command
@@ -29,10 +30,10 @@ class CreateProduitCommand extends Command
 
 
     // the name of the command (the part after "bin/console")
-    protected static $defaultName = 'app:create-produit';
+    protected static $defaultName = 'app:create-product';
 
     // the command description shown when running "php bin/console list"
-    protected static $defaultDescription = 'Creates a new produit.';
+    protected static $defaultDescription = 'Creates a new product.';
 
     // ...
     protected function configure(): void
@@ -54,7 +55,7 @@ class CreateProduitCommand extends Command
 
         // outputs multiple lines to the console (adding "\n" at the end of each line)
         $output->writeln([
-            'Produit Creator',
+            'Product Creator',
             '============',
             '',
         ]);
@@ -67,12 +68,12 @@ class CreateProduitCommand extends Command
 
         // outputs a message without adding a "\n" at the end of the line
         
-        $produit = new Produit;
+        $produit = new Products;
 
         $produit->setName($input->getArgument('Name'));
         $produit->setColor($input->getArgument('Color'));
         $produit->setDescription($input->getArgument('Description'));
-        $produit->setPrices($input->getArgument('Prices'));
+        $produit->setPrice($input->getArgument('Prices'));
         
         $output->writeln(['Ses infos sont bon ?']);
         $output->writeln([

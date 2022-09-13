@@ -11,6 +11,10 @@ use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 #[UniqueEntity(fields:['firstname','lastname','phone_number'],message:'Ce client existe deja' )]
 #[ApiResource(
     formats: ['json'],
+    attributes:[
+        'order' => ['lastname' => 'ASC'],
+        "pagination_maximum_items_per_page" => 10
+    ],
     collectionOperations: [
         "GET","POST"
 ],
