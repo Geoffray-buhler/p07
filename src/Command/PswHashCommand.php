@@ -57,7 +57,7 @@ class PswHashCommand extends Command
 
         // outputs a message without adding a "\n" at the end of the line
         $options = [
-            'cost' => 13,
+            'cost' => 4,
         ];
         
         $output->writeln([
