@@ -11,6 +11,7 @@ use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 #[ORM\Entity(repositoryClass: ProductsRepository::class)]
 #[UniqueEntity(fields:['name'],message:'Ce produit existe deja' )]
 #[ApiResource(
+    formats: ['json'],
     collectionOperations: [
         "GET"
 ],
