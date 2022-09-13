@@ -26,7 +26,9 @@ Vous pouvez crées des produits et des utilisateurs avec les commande suivants
 
 php bin/console app:create-user && php bin/console app:create-product
 
-$ php bin/console lexik:jwt:generate-keypair #####Utilisation
+php bin/console lexik:jwt:generate-keypair
+
+##### Utilisation
 
 Cette application a etais crée pour apprendre comment crée une Api avec Symfony Toute la documentation est accessible a https://localhost/api
 
