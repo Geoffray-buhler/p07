@@ -15,7 +15,10 @@ Php = 8.1.0
 
 ##### Pour lancer : Vous devez clonez ce projet ou vous pouvez utilisé le code et la Base de données envoyé
 
-##### Prérequits git git clone https://github.com/Geoffray-buhler/p07.git
+##### Prérequits 
+
+git
+git clone https://github.com/Geoffray-buhler/p07.git
 
 composer composer install 
 ##### Installation Vous devez mettre le fichier .env dans le repertoire principal. (Delivrable OC).
