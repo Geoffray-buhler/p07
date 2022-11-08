@@ -40,6 +40,9 @@ class Customer
     #[ORM\Column(length: 20)]
     private ?string $phone_number = null;
 
+    #[ORM\ManyToOne(inversedBy: 'customers')]
+    private ?User $User = null;
+
     public function getId(): ?int
     {
         return $this->id;
@@ -89,6 +92,18 @@ class Customer
     public function setPhoneNumber(string $phone_number): self
     {
         $this->phone_number = $phone_number;
+
+        return $this;
+    }
+
+    public function getUser(): ?User
+    {
+        return $this->User;
+    }
+
+    public function setUser(?User $User): self
+    {
+        $this->User = $User;
 
         return $this;
     }
