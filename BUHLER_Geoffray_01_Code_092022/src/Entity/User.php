@@ -20,7 +20,8 @@ use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
     ],
     itemOperations: [
         "GET" => ["security" => "object == user",
-        'cache_headers'=>['max_age'=>6000, 'shared_max_age'=>120]]
+        'cache_headers'=>['max_age'=>6000, 'shared_max_age'=>120]
+        ]
     ]
 )]
 class User implements UserInterface, PasswordAuthenticatedUserInterface
